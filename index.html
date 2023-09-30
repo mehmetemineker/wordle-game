@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordle</title>
+
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .wordle .container {
+        width: 300px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .wordle .container .words {
+        display: flex;
+        gap: 4px;
+        flex-direction: column;
+      }
+
+      .wordle .container .words .word {
+        display: flex;
+        gap: 4px;
+      }
+
+      .wordle .container .words .word.active .char {
+        background-color: #ccc;
+      }
+
+      .wordle .container .words .word .char {
+        background-color: #f2f2f2;
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .wordle .container .words .word .char.d {
+        background-color: #787c7e;
+      }
+
+      .wordle .container .words .word .char.c {
+        background-color: #ecd46b;
+      }
+
+      .wordle .container .words .word .char.m {
+        background-color: #6aaa64;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wordle" class="wordle">
+      <div class="container">
+        <div class="words"></div>
+      </div>
+    </div>
+    <script>
+      const wordle = document.getElementById('wordle')
+      const alphaRegex = /^[A-Za-z]+$/
+      const words = [
+        'Apple',
+        'Beach',
+        'Chair',
+        'Dance',
+        'Eagle',
+        'Flood',
+        'Grape',
+        'Hotel',
+        'Juice',
+        'Knife',
+        'Lemon',
+        'Music',
+        'Ocean',
+        'Pizza',
+        'Queen',
+        'Radio',
+        'Smile',
+        'Tiger',
+        'Umbra',
+        'Virus',
+        'Wrist',
+        'Xerox',
+        'Young',
+        'Zebra',
+        'Amber',
+        'Blend',
+        'Cloud',
+        'Dream',
+        'Fable',
+        'Glide',
+        'Inlet',
+        'Jolly',
+        'Knack',
+        'Latch',
+        'Mirth',
+        'Nexus',
+        'Oasis',
+        'Peach',
+        'Quilt',
+        'Raven',
+        'Space',
+        'Toast',
+        'Unity',
+        'Vowel',
+        'Watch',
+        'Yacht',
+        'Zoned',
+        'Alive',
+        'Blink',
+      ]
+
+      let activeWordIndex = 1
+      let targetWord = ''
+
+      const newTargetWord = () => {
+        targetWord = words[
+          Math.floor(Math.random() * words.length)
+        ].toLowerCase()
+      }
+
+      const createWordElement = () => {
+        const words = wordle.getElementsByClassName('words')[0]
+
+        words.innerHTML = ''
+
+        for (let wordIndex = 0; wordIndex < 6; wordIndex++) {
+          const word = document.createElement('div')
+          word.classList.add('word')
+
+          for (let charIndex = 0; charIndex < 5; charIndex++) {
+            const char = document.createElement('div')
+            char.classList.add('char')
+            word.appendChild(char)
+          }
+
+          words.appendChild(word)
+        }
+      }
+
+      const setActiveWord = () => {
+        const allWords = wordle.querySelectorAll('.word')
+
+        allWords.forEach((word) => {
+          word.classList.remove('active')
+        })
+
+        const activeWord = wordle.querySelector(
+          `.word:nth-child(${activeWordIndex})`,
+        )
+
+        if (activeWord) {
+          activeWord.classList.add('active')
+        }
+      }
+
+      createWordElement()
+      setActiveWord()
+      newTargetWord()
+
+      const checkWord = () => {
+        const chars = wordle.querySelectorAll(
+          `.word:nth-child(${activeWordIndex}) .char.filled`,
+        )
+
+        let matchCount = 0
+
+        chars.forEach((char, index) => {
+          char.classList.add('d')
+
+          const content = char.textContent.toLowerCase()
+
+          for (let i = 0; i < targetWord.length; i++) {
+            if (content === targetWord[i]) {
+              char.classList.add('c')
+            }
+          }
+
+          if (content === targetWord[index]) {
+            char.classList.add('m')
+            matchCount++
+          }
+        })
+
+        if (matchCount === targetWord.length) {
+          activeWordIndex = 1
+          newTargetWord()
+          createWordElement()
+        } else {
+          activeWordIndex++
+          setActiveWord()
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.repeat) return
+
+        const isAplhaChar = alphaRegex.test(String.fromCharCode(e.keyCode))
+
+        if (isAplhaChar) {
+          const char = wordle.querySelector(
+            `.word:nth-child(${activeWordIndex}) .char:not(.filled)`,
+          )
+
+          if (char) {
+            char.textContent = e.key
+            char.classList.add('filled')
+          }
+        }
+
+        const filledChars = wordle.querySelectorAll(
+          `.word:nth-child(${activeWordIndex}) .char.filled`,
+        )
+
+        if (e.key === 'Backspace') {
+          const lastFilledChar = filledChars[filledChars.length - 1]
+
+          if (lastFilledChar) {
+            lastFilledChar.textContent = ''
+            lastFilledChar.classList.remove('filled')
+          }
+        }
+
+        if (e.key === 'Enter' && filledChars.length === 5) {
+          checkWord()
+        }
+      })
+    </script>
+  </body>
+</html>
